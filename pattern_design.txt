@@ -1,0 +1,35 @@
+mo-phong-tu-tien-data/
+├── database/                # 📦 PHÂN KHU DỮ LIỆU & TOOL BUILD CLI
+│   ├── raw/                 # Các file phôi dữ liệu thô (.csv)
+│   ├── templates/           # Các file cấu hình hiển thị UI (.md)
+│   ├── utils.py             # Hàm tiện ích nội bộ (clean_column_name,...)
+│   ├── create_table.py      # Script quét template khởi tạo cấu trúc bảng SQLite
+│   ├── import_csv.py        # Script đồng bộ dữ liệu từ CSV vào SQLite
+│   ├── exporter.py          # Script đóng gói SQLite thành file core_game_data.json
+│   └── game_tu_tien.db      # File cơ sở dữ liệu SQLite3 đích
+│
+├── webui/                   # 📦 PHÂN KHU TRANG WIKI (CHỈ CÓ FILE TĨNH)
+│   ├── home.html            # Giao diện chính của Wiki
+│   ├── style.css            # Stylesheet của Wiki
+│   └── app.js               # Logic JavaScript gọi API công khai và hiển thị
+|   └── routes.py
+|
+├── src/                 # 🌐 NƠI LƯU TRỮ LOGIC TOÀN HỆ THỐNG
+│   └── common/          # Phân khu chứa các hàm dùng chung (Common Utilities)
+│       ├── __init__.py
+│       └── string_utils.py  # Đóng gói clean_column_name, remove_accents_and_spaces
+|
+├── dashboard/               # 📦 PHÂN KHU QUẢN TRỊ (CÓ CẢ BACKEND & UI NỘI BỘ)
+│   ├── ui/                  # Giao diện tĩnh dành riêng cho Nhân viên/Admin
+│   │   ├── index.html       # Trang Dashboard quản trị
+│   │   ├── dash.css         # Stylesheet của Dashboard
+│   │   └── dash.js          # Logic JS xử lý Thêm/Sửa/Xóa & gửi Token bảo mật
+│   ├── __init__.py          # Biến thư mục này thành một Python Package
+│   ├── auth.py              # Logic bảo mật: Xác thực login, băm mật khẩu, cấp JWT Token
+│   ├── services.py          # Logic nghiệp vụ: Kiểm tra tính hợp lệ dữ liệu trước khi ghi DB
+│   └── routes.py            # Cổng API Admin (APIRouter): Thêm, sửa, xóa hệ thống
+│
+├── main.py                  # 🚀 TỔNG ĐÀI ĐIỀU PHỐI (Chỉ cấu hình cổng Router và Mount UI)
+├── Makefile                 # Bộ lệnh tắt điều khiển dự án bằng CLI
+├── pyproject.toml           # Khai báo thư viện (FastAPI, PyJWT, Pandas...)
+└── README.md                # Hướng dẫn dự án
