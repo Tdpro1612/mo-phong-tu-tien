@@ -4,7 +4,7 @@
 # 1. Cài đặt các thư viện lõi + thư viện dev từ file pyproject.toml
 install:
 	pip install --upgrade pip
-	pip install -e .[dev]
+	pip install --editable .[dev] --config-settings editable_mode=compat
 
 # 2. Tự động format căn lề, bẻ dòng theo chuẩn PEP8 bằng Ruff
 format:
