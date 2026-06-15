@@ -1,0 +1,17 @@
+STT,Tên chỉ số,Mô tả  chỉ số,Loại chỉ số
+1,Thể lực,"Ảnh hưởng đến việc hoạt động hàng ngày của nhân vật : 
+- 1 ngày nhân vật có tối đa 100 thể lực. Nếu nghỉ ngơi đủ 8 tiếng ( không chia lẻ ) thì sẽ hồi phục 50 thể lực ( max 100 thể lực ). 
+- Mỗi nhiệm vụ sẽ tốn thời gian và thể lực riêng biệt. 
+- Nhân vật yêu cầu tối thiểu 50 thể lực để không bị ngất xỉu.Sau khi ngất xỉu nếu trên 30 thể lực: nghỉ ngơi đủ thời gian sẽ hồi phục đủ 50 thể lực có thể tỉnh lại. Thể lực từ 30-50 mỗi nghỉ 1 tiếng hồi phục 2 thể lực. Dưới 30 thể lực trừ khi có người khác can thiệp ( kì ngộ ) Nếu không sẽ không tỉnh lại và chết luôn. 
+- Các vết thương sẽ ảnh hưởng tốc độ khôi phục thể lực và thể lực tối đa.",Chỉ số cơ bản công khai 
+2,Căn cốt,"Ảnh hưởng đến việc tu luyện công pháp, kĩ năng : Đây là buff tăng tốc tu luyện kĩ năng công pháp.",Chỉ số cơ bản ẩn nếu lựa chọn tán tu. Chỉ kích hoạt khi đo bằng đá khai linh
+3,Ngộ tính,"Ảnh hưởng đến việc lĩnh ngộ công pháp, kĩ năng : Đây là buff tăng tốc lĩnh ngộ kĩ năng công pháp.",Chỉ số cơ bản ẩn.
+4,Linh căn,"Ảnh hưởng đến việc tu luyện, lĩnh ngộ công pháp, kĩ năng : Đây là buff tăng tốc tu luyện, lĩnh ngộ kĩ năng công pháp.",Chỉ số cơ bản ẩn nếu lựa chọn tán tu. Chỉ kích hoạt khi đo bằng đá khai linh
+5,Thiên phú,"Ảnh hưởng đến việc tu luyện, lĩnh ngộ công pháp, kĩ năng : Đây là buff tăng tốc tu luyện, lĩnh ngộ kĩ năng công pháp.",Chỉ số cơ bản ẩn nếu lựa chọn tán tu. Chỉ kích hoạt khi đo bằng đá khai linh
+6,Khí vận,"Ảnh hưởng đến việc gặp kì ngộ là tốt hay xấu, ảnh hưởng đến xác suất thành công của nhân vật",Chỉ số cơ bản ẩn.
+7,Phúc duyên,Ảnh hưởng đến xác suất kích hoạt kì ngộ của nhân vật.,Chỉ số cơ bản ẩn.
+8,Sinh lực,Ảnh hưởng đến việc chiến đấu của nhân vật : ,Chỉ số chiến đấu công khai
+9,Tấn công,Ảnh hưởng đến việc chiến đấu của nhân vật : gây sát thương lên địch nhân.,Chỉ số chiến đấu công khai
+10,Phòng thủ,Ảnh hưởng đến việc chiến đấu của nhân vật,Chỉ số chiến đấu công khai
+11,Thân pháp,Ảnh hưởng đến việc chiến đấu của nhân vật : xác suất né tránh và chính xác trúng đích địch,Chỉ số chiến đấu công khai
+12,Bạo kích,Ảnh hưởng đến việc chiến đấu của nhân vật : xác suất đánh trúng điểm yếu của địch : sát thương x2 và x% chí tử,Chỉ số chiến đấu công khai

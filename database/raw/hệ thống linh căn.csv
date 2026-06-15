@@ -1,0 +1,12 @@
+STT,Tên Linh Căn,Level bích chướng,TDTL đối với CP cùng linh căn,TDTL đối với CP khác linh căn
+1,Thiên linh căn : (linh căn >= 90),lv 101,Tốc độ x10,Tốc độ x5
+2,Địa linh căn (linh căn >=70,lv 81,Tốc độ x7,Tốc độ x3
+3,Huyền linh căn (linh căn >= 50,lv 61,Tốc độ x5,Tốc độ x1.5
+4,Hoàng linh căn (linh căn >= 30),lv 41,Tốc độ x3,Tốc độ x1
+5,Phế linh căn ( Linh căn < 30 ),lv 11,Tốc độ x1,Tốc độ x0.5
+6,Đơn linh căn,lv 101,Tốc độ x10,Tốc độ x5
+7,Hai linh căn,lv 81,Tốc độ x7,Tốc độ x3
+8,Ba linh căn,lv 61,Tốc độ x5,Tốc độ x1.5
+9,Tứ linh căn,lv 41,Tốc độ x3,Tốc độ x1
+10,Ngũ linh căn,lv 11,Tốc độ x1,Tốc độ x0.5
+11,"Dị linh căn : Băng, Phong, Lôi",Tỷ lệ đột phá ngang thiên linh căn,Tốc độ x10,Tốc độ x5

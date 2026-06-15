@@ -1,0 +1,16 @@
+STT,Tên nhiệm vụ,Mã nhiệm vụ,Mô tả nhiệm vụ,Bậc,Level,Loại nhiệm vụ,Yêu cầu
+1,Đọc sách,Q_B0_0_R_1,"- Nhiệm vụ cơ bản đầu tiên của mỗi mầm tiên. Bắt buộc phải học tập chữ viết , kinh mạch để có thể đọc hiểu bí kíp tu luyện",0,0,Tuần hoàn,
+2,Trồng trọt linh thực,Q_B0_0_R_2,- Nhiệm vụ cơ bản đầu tiên và an toàn dành cho các mầm tiên để có thể kiếm lấy thu nhập ban đầu.,0,0,Tuần hoàn,
+3,Chăn nuôi linh thú,Q_B0_0_R_3,- Nhiệm vụ cơ bản đầu tiên và an toàn dành cho các mầm tiên để có thể kiếm lấy thu nhập ban đầu.,0,0,Tuần hoàn,
+4,Làm học đồ {nghề phụ},Q_B0_2_R_4,- Nhiệm vụ đầu tiên để các mầm tiên tiếp xúc các nghề phụ,0,2,Tuần hoàn,
+5,Đóng giữ {vị trí đóng giữ},Q_B0_3_R_5,- Nhiệm vụ cơ bản cấp cao để kiếm được nhiều tiền hơn,0,3,Tuần hoàn,
+6,Nhân viên sảnh {vị trí giao tiếp},Q_B0_3_R_6,- Nhiệm vụ cơ bản cấp cao để kiếm được nhiều tiền hơn,0,3,Tuần hoàn,
+7,Nhân viên chiến đấu {vị trí chiến đấu},Q_B0_5_R_7,- Nhiệm vụ cơ bản cấp cao để kiếm được nhiều tiền hơn,0,5,Tuần hoàn,
+8,Nhân viên hậu cần {vị trí hậu cần},Q_B0_4_R_8,- Nhiệm vụ cơ bản cấp cao để kiếm được nhiều tiền hơn,0,4,Tuần hoàn,
+9,Cổ tông môn truyền thừa,Q_B0_4_S_9,"- Nhiệm vụ ẩn phúc lợi đầu tiên, giúp tu tiên có thể tăng tốc độ tu luyện",0,4,Ẩn,Q_B0_2_R_4
+10,Đan vương truyền thừa,Q_B0_4_S_10,"- Nhiệm vụ ẩn phúc lợi đầu tiên, giúp tu tiên có thể tăng tốc độ tu luyện",0,4,Ẩn,Q_B0_2_R_4
+11,Khí vương chọn đồ,Q_B0_4_S_11,"- Nhiệm vụ ẩn phúc lợi đầu tiên, giúp tu tiên có thể tăng tốc độ tu luyện",0,4,Ẩn,Q_B0_2_R_4
+12,Trận vương chọn đồ,Q_B0_4_S_12,"- Nhiệm vụ ẩn phúc lợi đầu tiên, giúp tu tiên có thể tăng tốc độ tu luyện",0,4,Ẩn,Q_B0_2_R_4
+13,Thi đấu hạng nhất,Q_B0_8_C_13,"- Nhiệm vụ khiêu chiến, giúp cho tu tiên giả có thể tăng cao danh vọng, chức vụ, mở rộng nhiệm vụ trong tông môn.",0,8,Khiêu chiến,
+14,Thi đấu hạng hai,Q_B0_8_C_14,"- Nhiệm vụ khiêu chiến, giúp cho tu tiên giả có thể tăng cao danh vọng, chức vụ, mở rộng nhiệm vụ trong tông môn.",0,8,Khiêu chiến,
+15,Thi đấu hạng ba,Q_B0_8_C_15,"- Nhiệm vụ khiêu chiến, giúp cho tu tiên giả có thể tăng cao danh vọng, chức vụ, mở rộng nhiệm vụ trong tông môn.",0,8,Khiêu chiến,
