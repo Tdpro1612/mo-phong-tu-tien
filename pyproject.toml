@@ -1,0 +1,76 @@
+[project]
+name = "mo-phong-tu-tien"
+version = "0.1.0"
+requires-python = ">=3.10"
+
+# KHAI BÁO CÁC THƯ VIỆN CẦN CÀI THÊM Ở ĐÂY
+dependencies = [
+    "pandas>=2.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.22.0",
+    "python-frontmatter>=1.1.0",
+    "jinja2>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pylint>=3.0.0",
+    "ruff>=0.1.0",
+]
+
+# ==============================================================================
+# CẤU HÌNH PYLINT
+# ==============================================================================
+[tool.pylint."MESSAGES CONTROL"]
+max-line-length = 120
+disable = [
+    "C0114", # Disable cảnh báo thiếu docstring ở đầu file
+    "C0115", # Disable cảnh báo thiếu docstring ở Class
+    "C0116", # Disable cảnh báo thiếu docstring ở Hàm
+    "R0903", # Disable cảnh báo Class quá ít method public
+    "C0411", # 🎯 Thêm: Disable cảnh báo sai thứ tự import của Pylint (đã có Ruff lo)
+    "C0412", # 🎯 Thêm: Disable cảnh báo import lộn xộn
+]
+
+[tool.pylint.master]
+ignore = ["myenv", ".venv", ".vscode", "__pycache__", "build", "dist"]
+ignore-paths = ["pyproject.toml"]
+
+# ==============================================================================
+# QUẢN LÝ CÁC THÔNG SỐ KHÔNG ĐỔI CỦA GAME
+# ==============================================================================
+[tool.game_config.database]
+db_name = "game_tu_tien.db"
+
+# ==============================================================================
+# CẤU HÌNH RUFF (FORMAT & LINT)
+# ==============================================================================
+[tool.ruff]
+line-length = 120
+
+# Phạm vi quét dữ liệu
+include = [
+    "src",
+    "database",
+    "dashboard",
+    "webui",
+    "main.py"
+]
+
+# Các khu vực tuyệt đối không sờ vào
+exclude = [
+    "myenv",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "pyproject.toml"
+]
+
+[tool.ruff.lint]
+# Kích hoạt luật: E, F (Luật của Flake8) | I (Luật tự sắp xếp Import thay thế Isort)
+select = ["E", "F", "I"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
