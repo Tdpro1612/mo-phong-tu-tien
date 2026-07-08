@@ -24,12 +24,12 @@ clean: format fix lint
 
 # 6. Khởi tạo cấu trúc bảng và đồng bộ dữ liệu phôi từ CSV vào SQLite cho Data Game
 datagame-init:
-	PYTHONPATH=. python database/create_table_data_game_in_db.py
-	PYTHONPATH=. python database/import_csv_to_db.py
-
+	PYTHONPATH=. python database/init_data_game.py
+check-db:
+	PYTHONPATH=. python database/check_db.py
 # 7. Khởi tạo cấu trúc các bảng hệ thống, quản lý phân quyền, workflow và tài khoản root cho Dashboard
 dashboard-init:
-	PYTHONPATH=. python database/create_table_system_user_in_db.py
+	PYTHONPATH=. python database/init_dashboard_system.py
 
 # 8. Khởi chạy Web Server FastAPI tập trung (Phục vụ chung cho cả Wiki hiển thị và API Dashboard)
 web-run:
