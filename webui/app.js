@@ -1,23 +1,37 @@
+// Khối 1: Trạng Thái Toàn Cục (Global States)
 /**
- * THIÊN CƠ LỤC - CORE APPLICATION LOGIC (GENERIC WIKI VERSION)
+ * THIÊN CƠ LỤC - CORE APPLICATION LOGIC (CLEAN LOGIC VERSION)
  */
 
-// SỰ KIỆN 1: Tự động chạy khi tải trang để dựng Sidebar từ API
+// Lưu trữ bản đồ Schema Metadata bốc từ các file .md (Mọi bảng game)
+window.allSystemSchemas = {};
+
+// Lưu trữ dữ liệu thực tế và cấu hình riêng của bảng đang được chọn hiển thị
+window.currentSystemData = null;
+
+// Chỉ số trang hiện tại của Wiki (0: Tổng quan + Hướng dẫn, >=1: Chi tiết từng dòng)
+window.currentWikiPage = 0;
+
+// Khối 2: Khởi Tạo Hệ Thống & Sidebar (Initialization)
+// Tự động kích hoạt khi tải trang: Nạp Schemas tổng lực từ Backend và dựng Sidebar
 document.addEventListener("DOMContentLoaded", () => {
     const treeMenu = document.getElementById("tree-menu");
     
-    // Gọi API để lấy danh sách các bảng hiện có trong Database
-    fetch(`/api/systems`)
+    fetch(`/api/webui-schemas`)
         .then(response => {
-            if (!response.ok) {
-                throw new Error("Không thể kết nối tới Backend server hoặc DB trống.");
-            }
+            if (!response.ok) throw new Error("Không thể nạp bản đồ cấu trúc hệ thống (Schemas).");
             return response.json();
         })
-        .then(data => {
-            let menuHtml = "";
-            
-            menuHtml += `
+        .then(schemas => {
+            window.allSystemSchemas = schemas;
+            const tableNameList = Object.keys(schemas);
+
+            if (tableNameList.length === 0) {
+                treeMenu.innerHTML = `<p class="wiki-empty-msg">💡 Chưa có hệ thống dữ liệu nào được khởi tạo hoặc thiếu file template.</p>`;
+                return;
+            }
+
+            let menuHtml = `
                 <div class="folder-group">
                     <div class="folder-title">
                         <i class="fa-solid fa-folder-open"></i> HỆ THỐNG DỮ LIỆU
@@ -25,10 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <ul class="file-list">
             `;
             
-            // Duyệt qua danh sách các bảng dữ liệu trả về từ SQLite
-            data.tables.forEach(tableName => {
-                // Biến đổi snake_case thành dạng viết hoa chữ cái đầu để hiển thị trực quan trên Sidebar
-                const displayName = tableName
+            tableNameList.forEach(tableName => {
+                const templateName = schemas[tableName]?.ten_he_thong;
+                const displayName = templateName || tableName
+                    .replace("he_thong_", "")
                     .split('_')
                     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                     .join(' ');
@@ -40,198 +54,217 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
             });
             
-            menuHtml += `
-                    </ul>
-                </div>
-            `;
-            
+            menuHtml += `</ul></div>`;
             treeMenu.innerHTML = menuHtml;
         })
         .catch(error => {
-            // Hiển thị lỗi trực quan lên Sidebar nếu quên chưa bật FastAPI
             treeMenu.innerHTML = `
-                <div style="color: #ef4444; padding: 15px; font-size: 14px; background: rgba(239, 68, 68, 0.1); border-radius: 6px;">
-                    <i class="fa-solid fa-triangle-exclamation"></i> <strong>Lỗi kết nối Backend:</strong><br>${error.message}
-                    <p style="font-size: 12px; color: #eab308; margin-top: 8px; margin-bottom: 0;">
-                        💡 <b>Mẹo:</b> Đảm bảo đạo hữu đã khởi chạy Uvicorn server bằng lệnh <code>make run-web</code> trước khi xem trang.
-                    </p>
+                <div class="wiki-error-box">
+                    <i class="fa-solid fa-triangle-exclamation"></i> 
+                    <strong>Lỗi khởi tạo hệ thống:</strong><br>${error.message}
                 </div>
             `;
         });
 });
 
-
-// SỰ KIỆN 2: Lazy Loading dữ liệu khi bấm chọn hệ thống trên Sidebar
-function loadSystemData(systemId, element) {
-    // Quản lý hiệu ứng active trên thanh menu sidebar
+// Khối 3: Nạp Dữ Liệu Bảng (Data Ingestion)
+// Lazy Loading dữ liệu thô từ DB khi click Sidebar và đối chiếu Schema toàn cục
+// Lazy Loading dữ liệu thô từ DB khi click Sidebar và đối chiếu Schema toàn cục
+function loadSystemData(tableName, element) {
     document.querySelectorAll('.file-item').forEach(item => item.classList.remove('active'));
     if (element) element.classList.add('active');
 
-    // Gọi API bốc dữ liệu tổng hợp của hệ thống được chọn
-    fetch(`/api/system/${systemId}`)
+    fetch(`/db/table/${tableName}`)
         .then(response => {
-            if (!response.ok) {
-                throw new Error(`Thất bại khi lấy dữ liệu hệ thống: ${systemId}`);
-            }
+            if (!response.ok) throw new Error(`Thất bại khi lấy dữ liệu từ bảng: ${tableName}`);
             return response.json();
         })
-        .then(data => {
-            // 1. Ẩn màn hình chào mừng, mở khung nội dung chính
+        .then(resDb => {
+            const rows = resDb.data || [];
+
             document.getElementById('welcome-view').style.display = 'none';
             document.getElementById('content-card').style.display = 'block';
             
-            // 2. Chuẩn bị phần nội dung hướng dẫn tĩnh (Markdown)
-            let finalHtml = "";
-            const markdownContent = data.huong_dan_markdown ? `<div class="markdown-body">${marked.parse(data.huong_dan_markdown)}</div>` : '';
-            
-            // 3. Xử lý chia trang dòng dữ liệu động tổng quát (Không hard-code)
-            if (data.cac_cot_hien_thi_ui && data.cac_cot_hien_thi_ui.length > 0) {
-                const rows = data.rows || [];
-                const headers = data.cac_cot_hien_thi_ui; // Cột đã lọc sạch ở backend
-                const mapping = data.mapping_ngon_ngu_ui || {}; // Bản đồ ngôn ngữ mới
-                
-                // CẬP NHẬT: Đồng bộ dữ liệu mới (gồm cả mapping) vào window để truy cập toàn cục
-                window.currentSystemData = {
-                    headers: headers,
-                    rows: rows,
-                    mapping_ngon_ngu_ui: mapping,
-                    systemId: systemId
-                };
-
-                // Trả về trang 0 (Mặc định là trang Giới thiệu tổng quan)
-                window.currentWikiPage = 0; 
-
-                // Khởi tạo khung chứa tổ hợp điều hướng
-                let wikiHtml = `
-                    <div class="wiki-navigation-panel">
-                        <div class="wiki-filter-wrapper">
-                            <label for="wiki-page-select"><i class="fa-solid fa-compass"></i> Mục Lục Hệ Thống: </label>
-                            <select id="wiki-page-select" onchange="switchWikiPage(parseInt(this.value))">
-                                <option value="0">📖 Trang Giới Thiệu Tổng Quan</option>
+            if (rows.length === 0) {
+                document.getElementById('content-area').innerHTML = `
+                    <p class="wiki-empty-msg">💡 Bảng [${tableName}] hiện đang rỗng dữ liệu dưới SQLite.</p>
                 `;
-
-                // Đổ các hàng dữ liệu vào Option - Tối ưu tìm kiếm cột Định danh tên gọi linh hoạt hơn
-                rows.forEach((row, idx) => {
-                    // Ưu tiên tìm các cột có chứa chữ 'ten_' để lấy tên hệ thống có dấu làm Title mục lục
-                    const nameKey = headers.find(h => h.startsWith('ten_')) || headers[1] || Object.keys(row)[1];
-                    const dynamicTitle = row[nameKey] || `Bản ghi số ${idx + 1}`;
-                    
-                    wikiHtml += `<option value="${idx + 1}">📄 Trang ${idx + 1}: ${dynamicTitle}</option>`;
-                });
-
-                wikiHtml += `
-                            </select>
-                        </div>
-
-                        <div id="wiki-page-content-holder">
-                            <div id="wiki-intro-section" class="wiki-page-fade">${markdownContent}</div>
-                            <div id="wiki-row-detail-section" class="wiki-page-fade" style="display: none;"></div>
-                        </div>
-
-                        <div class="wiki-pagination-bar">
-                            <button id="btn-wiki-back" class="wiki-nav-btn" onclick="navigateWikiPage(-1)" disabled>
-                                <i class="fa-solid fa-chevron-left"></i> Trang Trước
-                            </button>
-                            <span id="wiki-page-indicator" class="wiki-page-indicator">Trang Giới Thiệu</span>
-                            <button id="btn-wiki-next" class="wiki-nav-btn" onclick="navigateWikiPage(1)" ${rows.length === 0 ? 'disabled' : ''}>
-                                Trang Sau <i class="fa-solid fa-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-
-                finalHtml = wikiHtml;
-            } else {
-                finalHtml = markdownContent || `<p style="color: #64748b; font-style: italic;">💡 Hệ thống này hiện chưa có tài liệu lẫn dữ liệu DB.</p>`;
+                return;
             }
 
-            // Đổ toàn bộ cấu trúc vừa build vào vùng nội dung chính
-            document.getElementById('content-area').innerHTML = finalHtml;
+            const schema = window.allSystemSchemas[tableName] || {};
+            const uiColumns = schema.cac_cot_hien_thi_ui || [];
+            const mapping = schema.mapping_ngon_ngu_ui || {};
+            const markdownIntro = schema.intro || '';
+
+            let headers = [];
+            if (uiColumns.length > 0) {
+                headers = uiColumns.filter(col => Object.keys(rows[0]).includes(col));
+            } else {
+                headers = Object.keys(rows[0]).filter(h => h !== 'id');
+            }
+
+            window.currentSystemData = {
+                headers: headers,
+                rows: rows,
+                tableName: tableName,
+                mapping: mapping,
+                intro: markdownIntro
+            };
+
+            window.currentWikiPage = 0; 
+
+            let wikiHtml = `
+                <div class="wiki-navigation-panel">
+                    <div class="wiki-filter-wrapper">
+                        <label for="wiki-page-select"><i class="fa-solid fa-compass"></i> Mục Lục Hệ Thống: </label>
+                        <select id="wiki-page-select" onchange="switchWikiPage(parseInt(this.value))">
+                            <option value="0">📖 Trang Giới Thiệu Tổng Quan</option>
+            `;
+
+            const nameKey = headers.find(h => h.startsWith('ten_')) || headers[1] || headers[0];
+
+            rows.forEach((row, idx) => {
+                const dynamicTitle = row[nameKey] || `Bản ghi dòng ${idx + 1}`;
+                wikiHtml += `<option value="${idx + 1}">📄 Bản ghi ${idx + 1}: ${dynamicTitle}</option>`;
+            });
+
+            wikiHtml += `
+                        </select>
+                    </div>
+
+                    <div id="wiki-page-content-holder">
+                        <div id="wiki-markdown-guide" class="wiki-page-fade dynamic-content"></div>
+                        <div id="wiki-table-summary" class="wiki-page-fade dynamic-content"></div>
+                        <div id="wiki-row-detail" class="wiki-page-fade dynamic-content" style="display: none;"></div>
+                    </div>
+
+                    <div class="wiki-pagination-bar">
+                        <button id="btn-wiki-back" class="wiki-nav-btn" onclick="navigateWikiPage(-1)" disabled>
+                            <i class="fa-solid fa-chevron-left"></i> Trang Trước
+                        </button>
+                        <span id="wiki-page-indicator" class="wiki-page-indicator">Trang Giới Thiệu</span>
+                        <button id="btn-wiki-next" class="wiki-nav-btn" onclick="navigateWikiPage(1)">
+                            Trang Sau <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('content-area').innerHTML = wikiHtml;
+
+            // Kích hoạt nạp dữ liệu nền lần đầu tiên cho trang 0
+            initTrangTongQuan(window.currentSystemData);
+            switchWikiPage(0);
         })
         .catch(error => {
-            document.getElementById('welcome-view').style.display = 'none';
-            document.getElementById('content-card').style.display = 'block';
             document.getElementById('content-area').innerHTML = `
-                <div style="padding: 20px; border-left: 4px solid #ef4444; background: rgba(239,68,68,0.05);">
-                    <h2 style="color: #ef4444; margin-top: 0;"><i class="fa-solid fa-circle-exclamation"></i> Lỗi Nạp Hệ Thống</h2>
-                    <p style="color: #94a3b8;">${error.message}</p>
+                <div class="wiki-error-container">
+                    <h2><i class="fa-solid fa-circle-exclamation"></i> Lỗi Nạp Dữ Liệu</h2>
+                    <p>${error.message}</p>
                 </div>
             `;
         });
 }
 
-// HÀM TOÀN CỤC: Chuyển đổi trang tài liệu chi tiết
+// Khối 4: Điều Hướng & Render Giao Diện (Rendering & Pagination)
+// Chuyển đổi trạng thái hiển thị nội dung (Trang 0 VS Trang Chi Tiết)
+// Hàm bổ trợ: Chỉ vẽ nội dung Hướng dẫn tĩnh cho Trang Tổng Quan
+function initTrangTongQuan(data) {
+    const mdGuide = document.getElementById('wiki-markdown-guide');
+    const tableSummary = document.getElementById('wiki-table-summary');
+    
+    if (!mdGuide || !tableSummary) return;
+
+    // 1. Đổ tài liệu hướng dẫn .md vào phân khu riêng
+    if (data.intro) {
+        mdGuide.innerHTML = `<div class="markdown-body">${marked.parse(data.intro)}</div>`;
+    } else {
+        // Nếu bảng mới tinh chưa có file template .md, hiển thị thông báo nhẹ nhàng
+        mdGuide.innerHTML = `
+            <div class="wiki-empty-template-box">
+                <p class="wiki-empty-msg">💡 Hệ thống [${data.tableName}] chưa được thiết lập tài liệu hướng dẫn (Thiếu file .md).</p>
+            </div>
+        `;
+    }
+
+    // 2. Dọn sạch phân khu tableSummary (Vì chúng ta không muốn hiện toàn bộ bảng ở đây nữa)
+    tableSummary.innerHTML = '';
+}
+
+// Hàm cốt lõi: Điều phối ẩn/hiện các phân khu khi chuyển mục lục
 function switchWikiPage(targetPageIndex) {
     const data = window.currentSystemData;
     if (!data) return;
 
     window.currentWikiPage = targetPageIndex;
-    const introSection = document.getElementById('wiki-intro-section');
-    const detailSection = document.getElementById('wiki-row-detail-section');
+    const mdGuide = document.getElementById('wiki-markdown-guide');
+    const tableSummary = document.getElementById('wiki-table-summary');
+    const rowDetail = document.getElementById('wiki-row-detail');
+    
     const selectDropdown = document.getElementById('wiki-page-select');
     const pageIndicator = document.getElementById('wiki-page-indicator');
     
     if (selectDropdown) selectDropdown.value = targetPageIndex;
 
+    // TRANG 0: Chỉ hiện tài liệu hướng dẫn / Ẩn sạch sành sanh các phần dữ liệu động
     if (targetPageIndex === 0) {
-        if (introSection) introSection.style.display = 'block';
-        if (detailSection) detailSection.style.display = 'none';
+        if (mdGuide) mdGuide.style.display = 'block';
+        if (tableSummary) tableSummary.style.display = 'none'; // Khóa hẳn vùng chứa bảng
+        if (rowDetail) rowDetail.style.display = 'none';
+        
         pageIndicator.innerText = "Trang Giới Thiệu";
+
+    // TRANG CHI TIẾT (>0): Ẩn hướng dẫn / Hiện hồ sơ văn bản của dòng được chọn
     } else {
-        if (introSection) introSection.style.display = 'none';
-        if (detailSection) detailSection.style.display = 'block';
-        
-        const rowIndex = targetPageIndex - 1;
-        const rowData = data.rows[rowIndex];
-        const headers = data.headers;
-        const mapping = data.mapping_ngon_ngu_ui || {}; // Lấy map dịch thuật toàn cục
-        
-        // Tối ưu hóa tìm kiếm cột làm tiêu đề trang tài liệu con
-        const nameKey = headers.find(h => h.startsWith('ten_')) || headers[1] || Object.keys(rowData)[1];
-        const pageTitle = rowData[nameKey] || `Hàng dữ liệu số ${targetPageIndex}`;
-        
-        pageIndicator.innerText = `Trang ${targetPageIndex} / ${data.rows.length}`;
+        if (mdGuide) mdGuide.style.display = 'none';
+        if (tableSummary) tableSummary.style.display = 'none';
+        if (rowDetail) {
+            rowDetail.style.display = 'block';
+            
+            const rowIndex = targetPageIndex - 1;
+            const rowData = data.rows[rowIndex];
+            const headers = data.headers;
+            
+            const nameKey = headers.find(h => h.startsWith('ten_')) || headers[1] || headers[0];
+            const pageTitle = rowData[nameKey] || `Hàng dữ liệu số ${targetPageIndex}`;
+            
+            pageIndicator.innerText = `Trang ${targetPageIndex} / ${data.rows.length}`;
 
-        let rowHtml = `
-            <div class="wiki-document-container">
-                <h1 class="wiki-doc-title">${pageTitle}</h1>
-                <hr class="wiki-doc-hr">
-        `;
-        
-        // Thân bài duyệt tất cả các cột dữ liệu còn lại
-        headers.forEach((header) => {
-            // Bỏ qua cột STT và chính cột TÊN đã được đưa ra làm tiêu đề lớn (pageTitle) ở trên
-            if (header === 'stt' || header === nameKey) {
-                return; 
-            }
-
-            let cellValue = rowData[header];
-            if (cellValue === null || cellValue === undefined || cellValue === '') {
-                cellValue = `<span class="null-value">NULL (Trống)</span>`;
-            }
-
-            // CẬP NHẬT LOGIC TITLE TIẾNG VIỆT CÓ DẤU:
-            // Ưu tiên lấy từ cấu hình mapping trong file .md, nếu không có mới dùng thuật toán fallback cũ
-            const sectionLabel = mapping[header] || header.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-
-            rowHtml += `
-                <div class="wiki-doc-section">
-                    <h3 class="wiki-section-heading">${sectionLabel}</h3>
-                    <div class="wiki-section-content">${cellValue}</div>
-                </div>
+            let rowHtml = `
+                <div class="wiki-document-container">
+                    <h1 class="wiki-doc-title">${pageTitle}</h1>
+                    <hr class="wiki-doc-hr">
             `;
-        });
+            
+            headers.forEach((header) => {
+                if (header === 'stt' || header === nameKey) return; 
 
-        rowHtml += `</div>`;
-        if (detailSection) detailSection.innerHTML = rowHtml;
+                let cellValue = rowData[header];
+                if (cellValue === null || cellValue === undefined || cellValue === '') {
+                    cellValue = `<span class="wiki-null-value-block">NULL (Trống)</span>`;
+                }
+
+                const sectionLabel = data.mapping[header] || header.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+                rowHtml += `
+                    <div class="wiki-doc-section">
+                        <h4 class="wiki-section-heading"><i class="fa-solid fa-caret-right"></i> ${sectionLabel}</h4>
+                        <div class="wiki-section-content">${cellValue}</div>
+                    </div>
+                `;
+            });
+
+            rowHtml += `</div>`;
+            rowDetail.innerHTML = rowHtml;
+        }
     }
 
-    // Khóa/Mở nút điều hướng khi chạm biên dữ liệu
     document.getElementById('btn-wiki-back').disabled = (targetPageIndex === 0);
     document.getElementById('btn-wiki-next').disabled = (targetPageIndex === data.rows.length);
 }
 
-// HÀM TOÀN CỤC: Tăng/Giảm trang khi bấm Next/Back
+// Bấm nút Tăng/Giảm chỉ số trang (Giữ nguyên)
 function navigateWikiPage(direction) {
     const nextTarget = window.currentWikiPage + direction;
     const data = window.currentSystemData;
