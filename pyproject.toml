@@ -10,6 +10,7 @@ dependencies = [
     "uvicorn[standard]>=0.22.0",
     "python-frontmatter>=1.1.0",
     "jinja2>=3.0.0",
+    "python-multipart>=0.0.5",
 ]
 
 [project.optional-dependencies]
