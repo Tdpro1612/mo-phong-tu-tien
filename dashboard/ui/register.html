@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng Ký Tài Khoản Hệ Thống</title>
+    <link rel="stylesheet" href="/dashboard/ui/style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <h2>📝 ĐĂNG KÝ ACCOUNT MỚI</h2>
+            <p style="color: var(--text-muted); text-align: center; font-size: 0.9rem; margin-top: -1rem; margin-bottom: 1.5rem;">
+                Tài khoản mới tạo sẽ mặc định ở cấp bậc: <span style="color: var(--primary); font-weight: bold;">COMMENTOR</span>
+            </p>
+            
+            {% if error %}
+                <div class="alert-danger">{{ error }}</div>
+            {% endif %}
+            {% if success %}
+                <div class="alert-success">{{ success }}</div>
+            {% endif %}
+
+            <form action="/dashboard/register" method="post">
+                <div class="form-group">
+                    <label for="username">Tên đạo hiệu (Username)</label>
+                    <input type="text" id="username" name="username" placeholder="Ví dụ: tieu_pham_tu" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Mật khẩu bảo mật</label>
+                    <input type="password" id="password" name="password" placeholder="Tối thiểu 6 ký tự..." required>
+                </div>
+                
+                <button type="submit" class="btn" style="background: var(--success); color: var(--bg-main);">ĐĂNG KÝ</button>
+                
+                <a href="/dashboard/login" class="btn btn-secondary" style="display: block; text-align: center; text-decoration: none; margin-top: 0.5rem;">QUAY LẠI ĐĂNG NHẬP</a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

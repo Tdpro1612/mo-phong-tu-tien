@@ -1,0 +1,180 @@
+<div>
+    <h1>⚔️ Sảnh Thẩm Định Đề Xuất Biến Động</h1>
+    <p style="color: var(--text-muted);">Nơi kiểm duyệt, phê duyệt trạng thái dữ liệu game và thực hiện cơ chế bốc đẩy hàng loạt vào database gốc.</p>
+
+    <section class="filter-section" style="margin-bottom: 1.5rem;">
+        <label for="review-system-select" style="font-weight: bold; color: var(--primary);">🔮 Lọc theo hệ thống bảng:</label>
+        <select id="review-system-select" onchange="filterReviewList(this.value)">
+            <option value="">-- Tất cả hệ thống đang có biến động --</option>
+        </select>
+    </section>
+
+    <div class="excel-table-container">
+        <table class="excel-table">
+            <thead>
+                <tr>
+                    <th>ID Tạm</th>
+                    <th>Hệ Thống</th>
+                    <th>Dữ Liệu Gốc (Cũ)</th>
+                    <th>Dữ Liệu Đề Xuất (Mới)</th>
+                    <th style="color: var(--warning);">Kết Quả Thực Tế (Final)</th>
+                    <th style="text-align: center;">HÀNH ĐỘNG THẨM ĐỊNH</th>
+                </tr>
+            </thead>
+            <tbody id="review-tbody">
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted);">Đang triệu hồi danh sách đề xuất từ Thiên Cơ Lục...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    {% if user_role in ['root', 'admin', 'manager'] %}
+    <div id="bulk-push-area" style="margin-top: 1.5rem; text-align: right; display: none;">
+        <span style="color: var(--text-muted); font-size: 0.9rem; margin-right: 1rem;">* Hệ thống sẽ gom toàn bộ các dòng có trạng thái <b style="color: var(--success);">ACCEPTED</b> để đồng bộ.</span>
+        <button class="btn" style="background: var(--primary); color: #000; font-weight: bold;" onclick="triggerBulkPush()">🚀 KÍCH HOẠT ĐẨY DỮ LIỆU LÊN DATABASE GỐC</button>
+    </div>
+    {% endif %}
+</div>
+
+{% include "popup_detail.html" %}
+
+<script>
+    let allReviewRows = []; // Lưu trữ mảng phẳng gốc sau khi gọi API
+
+    // Nạp danh sách review phẳng khi vừa vào trang
+    document.addEventListener("DOMContentLoaded", async () => {
+        await fetchReviewList();
+    });
+
+    async function fetchReviewList() {
+        try {
+            const response = await fetch(`/dashboard/api/review/list?role=${userRole}&user_id=${userId}`);
+            const result = await response.json();
+            
+            if (!response.ok) throw new Error(result.detail || "Lỗi nạp danh sách thẩm định");
+            
+            allReviewRows = result.rows;
+            
+            // Tự động dựng các Option cho bộ lọc Hệ thống bảng tránh trùng lặp
+            const selectFilter = document.getElementById("review-system-select");
+            const systems = [...new Set(allReviewRows.map(r => r.system_id))];
+            
+            // Xóa các option cũ trừ option đầu tiên
+            selectFilter.innerHTML = '<option value="">-- Tất cả hệ thống đang có biến động --</option>';
+            systems.forEach(sys => {
+                selectFilter.innerHTML += `<option value="${sys}">📂 ${sys.replace(/_/g, ' ').toUpperCase()}</option>`;
+            });
+
+            renderReviewTable(allReviewRows);
+        } catch (err) {
+            document.getElementById("review-tbody").innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger);">❌ Lỗi: ${err.message}</td></tr>`;
+        }
+    }
+
+    function renderReviewTable(rows) {
+        const tbody = document.getElementById("review-tbody");
+        tbody.innerHTML = "";
+
+        if (rows.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sảnh thanh tịnh. Hiện tại không có đề xuất thay đổi nào cần xử lý.</td></tr>`;
+            if (document.getElementById("bulk-push-area")) document.getElementById("bulk-push-area").style.display = "none";
+            return;
+        }
+
+        rows.forEach(row => {
+            // Định dạng chuỗi hiển thị JSON dạng Prettify cho dễ nhìn
+            const oldDataStr = Object.keys(row.old_data).length ? JSON.stringify(row.old_data, null, 2) : "🆕 [BẢN GHI MỚI TẠO]";
+            const finalDataStr = JSON.stringify(row.final_data, null, 2);
+
+            let tr = document.createElement("tr");
+            tr.id = `review-row-${row.change_id}`;
+            tr.innerHTML = `
+                <td><b>#${row.change_id}</b></td>
+                <td><span class="user-badge" style="background: var(--border);">${row.system_id}</span></td>
+                <td><pre style="font-family: monospace; font-size: 0.85rem; margin:0;">${oldDataStr}</pre></td>
+                <td><pre style="font-family: monospace; font-size: 0.85rem; margin:0; color: var(--success);">${finalDataStr}</pre></td>
+                <td><pre id="final-preview-${row.change_id}" style="font-family: monospace; font-size: 0.85rem; margin:0; color: var(--warning); font-weight: bold;">${finalDataStr}</pre></td>
+                <td style="text-align: center;">
+                    <div style="display: flex; flex-direction: column; gap: 0.4rem; justify-content: center; align-items: center;">
+                        <div style="display: flex; gap: 0.3rem;">
+                            <button class="btn-sm" style="background: var(--success); color:#000;" onclick="executeReviewAction(${row.change_id}, 'ACCEPT')">✔️ Duyệt</button>
+                            <button class="btn-sm" style="background: var(--danger); color:#fff;" onclick="executeReviewAction(${row.change_id}, 'REJECT')">❌ Bác</button>
+                        </div>
+                        <button class="btn-sm" style="background: var(--border); color: var(--text-main); width: 100%;" onclick="openVersionModal(${row.change_id})">👁️ Lịch Sử Version</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Hiển thị nút bấm ghi hàng loạt nếu bộ lọc đang chọn duy nhất 1 bảng cụ thể
+        const currentSelectedSystem = document.getElementById("review-system-select").value;
+        if (document.getElementById("bulk-push-area")) {
+            document.getElementById("bulk-push-area").style.display = currentSelectedSystem ? "block" : "none";
+        }
+    }
+
+    function filterReviewList(selectedSystem) {
+        if (!selectedSystem) {
+            renderReviewTable(allReviewRows);
+        } else {
+            const filtered = allReviewRows.filter(r => r.system_id === selectedSystem);
+            renderReviewTable(filtered);
+        }
+    }
+
+    async function executeReviewAction(changeId, actionName) {
+        try {
+            const response = await fetch('/dashboard/api/review/action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    change_id: changeId,
+                    action: actionName,
+                    role: userRole,
+                    username: "{{ request.query_params.get('username', 'Admin_Dao_Huu') }}"
+                })
+            });
+
+            if (response.ok) {
+                // Hiệu ứng xóa dòng trực tiếp khỏi giao diện sau khi bấm Duyệt hoặc Bác thành công
+                const targetRow = document.getElementById(`review-row-${changeId}`);
+                if (targetRow) targetRow.remove();
+                
+                // Cập nhật lại mảng dữ liệu local
+                allReviewRows = allReviewRows.filter(r => r.change_id !== changeId);
+                if(allReviewRows.length === 0) fetchReviewList();
+            } else {
+                const errData = await response.json();
+                alert("❌ Thất bại: " + errData.detail);
+            }
+        } catch (err) { alert("❌ Lỗi kết nối: " + err.message); }
+    }
+
+    async function triggerBulkPush() {
+        const selectedSystem = document.getElementById("review-system-select").value;
+        if (!selectedSystem) { alert("Vui lòng chọn cụ thể một hệ thống bảng trước khi kích hoạt Bulk Write!"); return; }
+        
+        if (!confirm(`Hệ thống chuẩn bị đẩy toàn bộ dữ liệu trạng thái [ACCEPTED] vào bảng gốc \`${selectedSystem}\`. Bạn có chắc chắn muốn kích hoạt đại trận này không?`)) return;
+
+        try {
+            const response = await fetch('/dashboard/api/review/push-main', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: "{{ request.query_params.get('username', 'Admin_Dao_Huu') }}",
+                    system_id: selectedSystem
+                })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert("🔮 Sắc lệnh đồng bộ thành công: " + result.message);
+                window.location.reload();
+            } else {
+                alert("❌ Lỗi Bulk Write: " + result.detail);
+            }
+        } catch (err) { alert("❌ Lỗi: " + err.message); }
+    }
+</script>

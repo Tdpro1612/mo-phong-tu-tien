@@ -1,0 +1,105 @@
+/* dashboard/ui/style.css */
+:root {
+    --bg-main: #0f172a;
+    --bg-card: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --primary: #38bdf8;
+    --success: #34d399;
+    --danger: #f87171;
+    --warning: #fbbf24;
+    --border: #334155;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+}
+
+/* --- LOGIN & REGISTER --- */
+.login-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
+.login-card {
+    background: var(--bg-card); padding: 2.5rem; border-radius: 12px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); border: 1px solid var(--border); width: 100%; max-width: 400px;
+}
+.login-card h2 { text-align: center; margin-bottom: 2rem; color: var(--primary); }
+.form-group { margin-bottom: 1.5rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); }
+.form-group input, .form-group select {
+    width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg-main); color: var(--text-main); box-sizing: border-box;
+}
+.btn {
+    width: 100%; padding: 0.75rem; background: var(--primary); border: none;
+    border-radius: 6px; color: var(--bg-main); font-weight: bold; cursor: pointer; transition: 0.3s; text-align: center;
+}
+.btn:hover { opacity: 0.9; box-shadow: 0 0 15px var(--primary); }
+.btn-secondary { background: var(--border); color: var(--text-main); margin-top: 0.5rem; display: block; text-decoration: none; }
+.alert-danger { background: rgba(248, 113, 113, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 0.75rem; border-radius: 6px; margin-bottom: 1.5rem; text-align: center; }
+.alert-success { background: rgba(52, 211, 153, 0.1); border: 1px solid var(--success); color: var(--success); padding: 0.75rem; border-radius: 6px; margin-bottom: 1.5rem; text-align: center; }
+
+/* --- LAYOUT --- */
+.dashboard-layout { display: flex; height: 100vh; }
+.sidebar { width: 280px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; }
+.sidebar-header { padding: 1.5rem; border-bottom: 1px solid var(--border); text-align: center; }
+.sidebar-menu { padding: 1rem; flex-grow: 1; }
+.sidebar-menu h3 { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 1.5rem; }
+.sidebar-menu ul { list-style: none; padding: 0; margin: 0; }
+.sidebar-menu li a { display: block; padding: 0.75rem 1rem; color: var(--text-main); text-decoration: none; border-radius: 6px; margin-bottom: 0.5rem; transition: 0.2s; }
+.sidebar-menu li a:hover, .sidebar-menu li a.active { background: var(--border); color: var(--primary); }
+.sidebar-footer { padding: 1rem; border-top: 1px solid var(--border); }
+.main-content { flex-grow: 1; padding: 2rem; overflow-y: auto; }
+.user-badge { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--primary); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; color: var(--primary); }
+
+/* --- FILTER & EXCEL TABLE --- */
+.filter-section { background: var(--bg-card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center; }
+.filter-section select { padding: 0.75rem 1.5rem; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; min-width: 250px; font-size: 1rem; }
+.excel-table-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; margin-bottom: 1.5rem; }
+.excel-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem; }
+.excel-table th { background: #111827; color: var(--primary); padding: 1rem; border-bottom: 2px solid var(--border); font-weight: 600; }
+.excel-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); color: #e2e8f0; }
+.excel-table tr:hover { background: rgba(51, 65, 85, 0.5); }
+
+/* --- ACTION BUTTONS --- */
+.btn-sm { padding: 0.4rem 0.75rem; font-size: 0.85rem; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; margin-right: 0.3rem; }
+.btn-edit { background: var(--warning); color: #000; }
+.btn-delete { background: var(--danger); color: #fff; }
+.btn-add-row { background: var(--success); color: var(--bg-main); font-weight: bold; display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; width: auto; padding: 0.75rem 1.5rem; }
+
+
+/* ==============================================================================
+   🏛️ STYLE ĐỊNH DẠNG LỚP NỀN PHỦ MỜ VÀ CARD POPUP MODAL
+   ============================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-card {
+    background: var(--bg-card, #1e1e1e);
+    border: 1px solid var(--border, #333);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border, #333);
+    padding-bottom: 0.8rem;
+}

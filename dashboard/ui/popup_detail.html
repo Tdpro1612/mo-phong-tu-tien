@@ -1,0 +1,125 @@
+<div id="version-modal-overlay" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 700px; width: 90%;">
+        <div class="modal-header">
+            <h3 style="color: var(--primary); margin: 0;">⏳ Lịch Sử Các Phiên Bản Thay Đổi (Version Log)</h3>
+            <span style="cursor: pointer; font-size: 1.5rem; color: var(--text-muted);" onclick="closeVersionModal()">&times;</span>
+        </div>
+        <div class="modal-body" style="padding: 1.5rem 0;">
+            
+            <div class="form-group" style="margin-bottom: 1.2rem;">
+                <label for="modal-version-select" style="font-weight: bold; color: var(--success);">↩️ Chọn phiên bản để cứu vãn (Rollback):</label>
+                <select id="modal-version-select" style="width: 100%; padding: 0.6rem;" onchange="previewSelectedVersion(this.value)">
+                    </select>
+            </div>
+
+            <div class="form-group">
+                <label style="font-weight: bold; color: var(--warning);">👁️ Bản xem trước dữ liệu của Version được chọn:</label>
+                <div style="background: rgba(0,0,0,0.4); border: 1px dashed var(--border); padding: 1rem; border-radius: 4px; margin-top: 0.5rem;">
+                    <pre id="modal-version-preview" style="font-family: monospace; margin: 0; color: #fff; overflow-x: auto; max-height: 250px;"></pre>
+                </div>
+            </div>
+
+        </div>
+        <div class="modal-footer" style="text-align: right; gap: 0.5rem; display: flex; justify-content: flex-end;">
+            <button class="btn btn-secondary" onclick="closeVersionModal()">ĐÓNG POPUP</button>
+            <button class="btn" style="background: var(--warning); color: #000; font-weight: bold;" onclick="executeRollbackAction()">🔄 XÁC NHẬN ROLLBACK VỀ VERSION NÀY</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentActiveChangeId = null;
+    let currentHistoryLogArray = [];
+
+    async function openVersionModal(changeId) {
+        currentActiveChangeId = changeId;
+        const selectVersion = document.getElementById("modal-version-select");
+        const previewBlock = document.getElementById("modal-version-preview");
+        
+        selectVersion.innerHTML = "<option>Đang truy vết lịch sử...</option>";
+        previewBlock.innerText = "";
+        document.getElementById("version-modal-overlay").style.display = "flex";
+
+        try {
+            const response = await fetch(`/dashboard/api/review/detail/${changeId}`);
+            const result = await response.json();
+            
+            if (!response.ok) throw new Error(result.detail || "Không thể bốc lịch sử log.");
+
+            currentHistoryLogArray = result.history;
+            selectVersion.innerHTML = "";
+
+            // Đổ ngược danh sách từ Version mới nhất xuống Version cũ nhất để tiện theo dõi
+            for (let i = currentHistoryLogArray.length - 1; i >= 0; i--) {
+                const item = currentHistoryLogArray[i];
+                let opt = document.createElement("option");
+                opt.value = item.version;
+                opt.innerText = `V${item.version} - Đạo hữu: ${item.username} [Hành động: ${item.action}] - (${item.timestamp})`;
+                selectVersion.appendChild(opt);
+            }
+
+            // Tự động kích hoạt hiển thị Preview cho phần tử version mới nhất trên cùng
+            if (currentHistoryLogArray.length > 0) {
+                const latestVersionNum = currentHistoryLogArray[currentHistoryLogArray.length - 1].version;
+                selectVersion.value = latestVersionNum;
+                previewSelectedVersion(latestVersionNum);
+            }
+
+        } catch (err) {
+            selectVersion.innerHTML = `<option>❌ Thất bại: ${err.message}</option>`;
+        }
+    }
+
+    function previewSelectedVersion(versionNum) {
+        const targetObj = currentHistoryLogArray.find(v => v.version == versionNum);
+        if (targetObj) {
+            document.getElementById("modal-version-preview").innerText = JSON.stringify(targetObj.snapshot, null, 4);
+        }
+    }
+
+    function closeVersionModal() {
+        document.getElementById("version-modal-overlay").style.display = "none";
+        currentActiveChangeId = null;
+        currentHistoryLogArray = [];
+    }
+
+    async function executeRollbackAction() {
+        const selectedVersion = document.getElementById("modal-version-select").value;
+        if (!selectedVersion || !currentActiveChangeId) return;
+
+        if (!confirm(`Bạn có chắc chắn muốn bẻ lái dòng dữ liệu tạm này quay trở về trạng thái cấu trúc của Version ${selectedVersion} không?`)) return;
+
+        try {
+            const response = await fetch('/dashboard/api/review/action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    change_id: currentActiveChangeId,
+                    action: 'ROLLBACK',
+                    selected_version: parseInt(selectedVersion),
+                    user_id: parseInt(userId),
+                    role: userRole,
+                    username: "{{ request.query_params.get('username', 'Admin_Dao_Huu') }}"
+                })
+            });
+
+            if (response.ok) {
+                alert(`🔮 Trận pháp quay ngược thời gian thành công! Đã Rollback về V${selectedVersion}.`);
+                closeVersionModal();
+                
+                // Đồng bộ cập nhật lại dữ liệu hiển thị ở cột Final ngay trên trang phẳng mà không cần reload trang
+                const targetVersionObj = currentHistoryLogArray.find(v => v.version == selectedVersion);
+                const finalPreviewElement = document.getElementById(`final-preview-${currentActiveChangeId}`);
+                if (finalPreviewElement && targetVersionObj) {
+                    finalPreviewElement.innerText = JSON.stringify(targetVersionObj.snapshot, null, 2);
+                }
+                
+                // Làm tươi lại danh sách phẳng tổng để đảm bảo đồng bộ
+                fetchReviewList();
+            } else {
+                const errData = await response.json();
+                alert("❌ Rollback thất bại: " + errData.detail);
+            }
+        } catch (err) { alert("❌ Lỗi kết nối: " + err.message); }
+    }
+</script>

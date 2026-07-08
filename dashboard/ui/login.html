@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng Nhập Hệ Thống Quản Trị Dashboard</title>
+    <link rel="stylesheet" href="/dashboard/ui/style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <h2>🛡️ ĐẠI ĐIỆN QUẢN TRỊ</h2>
+            
+            {% if error %}
+                <div class="alert-danger">{{ error }}</div>
+            {% endif %}
+
+            <form action="/dashboard/login" method="post">
+                <div class="form-group">
+                    <label for="username">Tên đạo hiệu (Username)</label>
+                    <input type="text" id="username" name="username" placeholder="Nhập tên tài khoản..." required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Mật mã thiên cơ (Password)</label>
+                    <input type="password" id="password" name="password" placeholder="Nhập mật khẩu..." required>
+                </div>
+                <button type="submit" class="btn">ĐĂNG NHẬP</button>
+                
+                <a href="/dashboard/register" class="btn btn-secondary" style="display: block; text-align: center; text-decoration: none; margin-top: 0.5rem;">ĐĂNG KÝ TÀI KHOẢN MỚI</a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
