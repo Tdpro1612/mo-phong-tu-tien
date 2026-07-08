@@ -4,7 +4,7 @@ ten_he_thong: "Hệ Thống Linh Căn"
 ten_danh_muc_chinh: "Tu Tiên Lục"
 cac_cot_du_lieu:
   - stt: "INTEGER"
-  - ten_linh_can: "TEXT"
+  - ten_linh_can: TEXT UNIQUE NOT NULL
   - level_bich_chuong: "TEXT"
   - tdtl_doi_voi_cp_cung_linh_can: "TEXT"
   - tdtl_doi_voi_cp_khac_linh_can: "TEXT"

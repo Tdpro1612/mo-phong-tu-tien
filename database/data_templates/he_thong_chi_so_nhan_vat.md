@@ -5,7 +5,7 @@ ten_danh_muc_chinh: "Tu Tiên Lục"
 # 1. Danh sách tất cả các cột để khởi tạo cấu trúc bảng trong Database SQLite3
 cac_cot_du_lieu:
   - stt: "INTEGER"
-  - ten_chi_so: "TEXT"
+  - ten_chi_so: TEXT UNIQUE NOT NULL
   - mo_ta_chi_so: "TEXT"
   - loai_chi_so: "TEXT"
 # 2. Cấu hình giao diện: Chỉ định rõ những cột nào sẽ được lấy để hiển thị lên Web

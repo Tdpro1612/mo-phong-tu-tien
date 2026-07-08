@@ -4,9 +4,9 @@ ten_he_thong: "Hệ Thống Nhiệm Vụ"
 ten_danh_muc_chinh: "Tu Tiên Lục"
 cac_cot_du_lieu:
   - stt: "INTEGER"
-  - ten_nhiem_vu: "TEXT"
-  - ma_nhiem_vu: "TEXT"
+  - ten_nhiem_vu: TEXT UNIQUE NOT NULL
   - mo_ta_nhiem_vu: "TEXT"
+  - ma_nhiem_vu: "TEXT"
   - bac: "INTEGER"
   - level: "INTEGER"
   - loai_nhiem_vu: "TEXT"
