@@ -10,7 +10,14 @@ import os
 import sqlite3
 from database_utils import parse_file_md_schema
 from database_manager import create_a_table
+from dotenv import load_dotenv
 
+load_dotenv()
+default_password_root = os.getenv("Password")
+
+# Kiểm tra nếu biến không tồn tại (None) hoặc chuỗi rỗng
+if not default_password_root or default_password_root.strip() == "":
+    raise ValueError("CRITICAL ERROR: Bạn chưa cấu hình hoặc để trống 'Password' trong file .env!")
 # 📐 QUY HOẠCH ĐƯỜNG DẪN CHUẨN
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "sys_templates")
@@ -111,14 +118,14 @@ def create_account_rootdev() -> None:
         return
 
     # Tạo tài khoản rootdev với mật khẩu mặc định
-    mat_khau_bam = hash_password("dev2026@")
+    mat_khau_bam = hash_password(default_password_root)  # Lấy mật khẩu từ biến môi trường .env
     try:
         cursor.execute(
             f"INSERT INTO sys_users ({col_username}, {col_password}, {col_role}) VALUES (?, ?, ?)",
             ("rootdev", mat_khau_bam, "root")
         )
         conn.commit()
-        print(f"✅ Tài khoản 'rootdev' đã được tạo thành công với mật khẩu mặc định 'dev2026@'.")
+        print(f"✅ Tài khoản 'rootdev' đã được tạo thành công với mật khẩu mặc định.")
     except sqlite3.Error as e:
         print(f"❌ Lỗi ghi tài khoản rootdev vào DB: {e}")
     finally:
